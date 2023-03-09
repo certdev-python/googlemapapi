@@ -1,0 +1,47 @@
+<!--plotting maps in website using google map api-->
+<html>
+  <head>
+    <title>Simple Map</title>
+    <!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script> -->
+
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script type="text/javascript" src="./app.js"></script>
+    <!-- <script src="jquery.min.js"></script> -->
+
+    <!-- <script src="PapaParse/papaparse.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.1.0/papaparse.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.1.0/papaparse.min.js"></script>
+
+
+  </head>
+  <body>
+    <h1>Google Map API</h1>
+
+   
+    <!-- <p id="output"></p> -->
+    <input type="file" name="" id="fileInput">
+    <select id="select-option" style="float:right; background-color: antiquewhite; padding: 2px; margin: 2px;">
+      <option value="All" selected>ALL</option>
+      <option value="active">Active</option>
+      <option value="new">New</option>
+      <option value="reopened">Reopened</option>
+      <option value="closed">Closed</option>
+    </select>
+    <div id="map"></div>
+
+    <!-- 
+      The `defer` attribute causes the callback to execute after the full HTML
+      document has been parsed. For non-blocking uses, avoiding race conditions,
+      and consistent behavior across browsers, consider loading using Promises
+      with https://www.npmjs.com/package/@googlemaps/js-api-loader.
+      -->
+
+      <script async
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCwF2cQXkWQjYOVKTWMNJKpvQzpN0QoWhc&callback=initMap">
+      // use the link to get the api key for particular user of google account - https://developers.google.com/maps/documentation/javascript/overview#maps_map_simple-html
+      // use the link to enable for running the above map api -  https://console.cloud.google.com/apis/library/maps-backend.googleapis.com?q=Google%20Maps%20JavaScript%20API&id=fd73ab50-9916-4cde-a0f6-dc8be0a0d425&project=windy-furnace-180806
+      </script>
+  </body>
+</html>
