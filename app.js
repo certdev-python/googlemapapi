@@ -9,10 +9,15 @@
 
 // window.initMap = initMap;
 function initMap(){
+
     var s = new google.maps.LatLng(1.3521, 103.8198);
 
     map = new google.maps.Map(document.getElementById("map"),{center: s, zoom: 15})
-    
+    $(document).ready(function() {
+        debugger;
+        console.log("hi")
+        readCSVFile("http://localhost/clientsheet.csv");
+    });
     // const marker = new google.maps.Marker({
     // position:{ lat: 22.7240, lng: 75.8843 },
     // map:map
@@ -23,6 +28,7 @@ function initMap(){
         const marker = new google.maps.Marker({
             position:property.location,
             map:map,
+
         })
         markers.push(marker)
         if(property.content){
@@ -40,6 +46,9 @@ function initMap(){
     }
 
     function plotmap(results){
+        debugger;
+        console.log("data")
+        console.log(results.data)
         var i=0;
         for(var a=0;a<(results.data.length)-1;a++){ 
             if (selectOpt.value == "All"){
@@ -47,9 +56,10 @@ function initMap(){
                     let lt = parseFloat(results.data[a]['Latitude']);
                     let lg= parseFloat(results.data[a]['Longitude']);
                     let CompanyName=results.data[a]['Customer Name'];
+                    let address=results.data[a]['Address'];
                     let b_name=results.data[a]['Status']
                     i+=1;
-                    addMarker({location:{lat:lt , lng:lg},content:'<h2>'+b_name+'</h2>'+'<p>'+CompanyName+'<p>'})
+                    addMarker({location:{lat:lt , lng:lg},content:'<h2>'+CompanyName+'</h2>'+'<p>'+address+'<p>'+'<p>'+b_name+'<p>'})
                 }
             }  
             else{
@@ -58,9 +68,10 @@ function initMap(){
                         let lt = parseFloat(results.data[a]['Latitude']);
                         let lg= parseFloat(results.data[a]['Longitude']);
                         let CompanyName=results.data[a]['Customer Name'];
+                        let address=results.data[a]['Address'];
                         let b_name=results.data[a]['Status']
                         i+=1;
-                        addMarker({location:{lat:lt , lng:lg},content:'<h2>'+b_name+'</h2>'+'<p>'+CompanyName+'<p>'})
+                        addMarker({location:{lat:lt , lng:lg},content:'<h2>'+CompanyName+'</h2>'+'<p>'+address+'<p>'+'<p>'+b_name+'<p>'})
                     }
                 }
             }
@@ -82,29 +93,40 @@ function initMap(){
         // Call set markers to re-add markers
     }
 
-    var input = document.getElementById("fileInput");
+    
     var selectOpt = document.getElementById("select-option");
-    input.addEventListener("change", function(event) {
+   
+    function readCSVFile(filePath) {
         debugger;
-        var file = event.target.files[0];
-        Papa.parse(file, {
-            header: true,
-            complete: function(results) {
-                reloadMarkers();
-                plotmap(results);   
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            debugger;
+            var csvData = xhr.responseText;
+            var lines = csvData.split('\n');
+            var result = [];
+            var headers = lines[0].split(',');
+            for (var i = 1; i < lines.length; i++) {
+              var obj = {};
+              var currentLine = lines[i].split(',');
+              for (var j = 0; j < headers.length; j++) {
+                obj[headers[j]] = currentLine[j];
+              }
+              result.push(obj);
             }
-        });
-    });
+            console.log(result); // or do something else with the parsed CSV data
+            reloadMarkers();
+            plotmap(result);  
+          }
+        };
+        xhr.open('GET', filePath, true);
+        xhr.send();
+      }
 
     selectOpt.addEventListener("change", function() {
         debugger;
-        var file = document.getElementById("fileInput").files[0];
-        Papa.parse(file, {
-            header: true,
-            complete: function(results) {
-                reloadMarkers();
-                plotmap(results);    
-            }
-        });
+        readCSVFile("http://localhost/clientsheet.csv");
+        reloadMarkers();
+        plotmap(result);  
     });
 }
