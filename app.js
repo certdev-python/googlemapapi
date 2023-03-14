@@ -1,132 +1,172 @@
-//<!--plotting maps in website using google map api-->
-// function initMap() {
-//   map = new google.maps.Map(document.getElementById("map"), {
-//     center: { lat: 22.7240, lng: 75.8843 },
-//     zoom: 8,
-//   });
-// }
-
-
-// window.initMap = initMap;
 function initMap(){
 
     var s = new google.maps.LatLng(1.3521, 103.8198);
 
-    map = new google.maps.Map(document.getElementById("map"),{center: s, zoom: 15})
+    map = new google.maps.Map(document.getElementById("map"),{center: s, zoom: 15,gestureHandling: "cooperative",})
+
     $(document).ready(function() {
-        debugger;
-        console.log("hi")
-        readCSVFile("http://localhost/clientsheet.csv");
+        //calling parse funtion for reading csv file.
+        parse();
     });
-    // const marker = new google.maps.Marker({
-    // position:{ lat: 22.7240, lng: 75.8843 },
-    // map:map
-    // });
+   
+    function parse() {
+        CSVFile="http://localhost/clientsheet1.csv"
+        Papa.parse(CSVFile,{
+            download: true, //When linking an URL the download must be true
+            header: true, //makes the header in front of every data in the array
+            complete: function (results) { //Runs log function, with results from the conversion
+                console.log(results);
+                reloadMarkers();
+                plotmap(results);  
+            }
+        });         
+    } 
     var markers=[];
-
+    
+    // plotting marker , coloring ,formating is done in this function
     function addMarker(property){
-        const marker = new google.maps.Marker({
-            position:property.location,
-            map:map,
 
-        })
-        markers.push(marker)
-        if(property.content){
-            const detailWindow = new google.maps.InfoWindow({
-                content: property.content
-            });
-            marker.addListener("mouseover",() =>{
-                detailWindow.open(map,marker);
+        debugger;
+        if (property.status=="active" || property.status=="could not be verified"){
+
+            const marker = new google.maps.Marker({
+                position:property.location,
+                icon: {
+                    url:"http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                },
+                map:map,
             })
-            var closeInfoWindowWithTimeout;
-            marker.addListener('mouseout', function() {
-                closeInfoWindowWithTimeout = setTimeout(() => detailWindow.close(map, marker), 1000);
-            }, false);
-        }
-    }
+            markers.push(marker)
+            if(property.content){
+                const detailWindow = new google.maps.InfoWindow({
+                    content: property.content
+                });
+                marker.addListener("mouseover",() =>{
+                    detailWindow.open(map,marker);
+                })
+                var closeInfoWindowWithTimeout;
+                marker.addListener('mouseout', function() {
+                    closeInfoWindowWithTimeout = setTimeout(() => detailWindow.close(map, marker), 1000);
+                }, false);
+            }
 
+        }
+        
+        if (property.status=="closed"){
+            const marker = new google.maps.Marker({
+                position:property.location,
+                icon:{
+                    url:"http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                },
+                map:map,
+    
+            })
+            markers.push(marker)
+            if(property.content){
+                const detailWindow = new google.maps.InfoWindow({
+                    content: property.content
+                });
+                marker.addListener("mouseover",() =>{
+                    detailWindow.open(map,marker);
+                })
+                var closeInfoWindowWithTimeout;
+                marker.addListener('mouseout', function() {
+                    closeInfoWindowWithTimeout = setTimeout(() => detailWindow.close(map, marker), 1000);
+                }, false);
+            }
+
+        }
+       
+        if (property.status=="new"){
+            const marker = new google.maps.Marker({
+                position:property.location,
+                icon: {
+                    url:"http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+                },
+                map:map,
+    
+            })
+            markers.push(marker)
+            if(property.content){
+                const detailWindow = new google.maps.InfoWindow({
+                    content: property.content
+                });
+                marker.addListener("mouseover",() =>{
+                    detailWindow.open(map,marker);
+                })
+                var closeInfoWindowWithTimeout;
+                marker.addListener('mouseout', function() {
+                    closeInfoWindowWithTimeout = setTimeout(() => detailWindow.close(map, marker), 1000);
+                }, false);
+            }
+        } 
+    }
+    
+    // extracting values from results that we got after reading csv file.
     function plotmap(results){
         debugger;
-        console.log("data")
-        console.log(results.data)
         var i=0;
         for(var a=0;a<(results.data.length)-1;a++){ 
+          
             if (selectOpt.value == "All"){
                 if(results.data[a]['Latitude'].indexOf('.')!=-1 && results.data[a]['Longitude'].indexOf('.')!=-1){
                     let lt = parseFloat(results.data[a]['Latitude']);
                     let lg= parseFloat(results.data[a]['Longitude']);
-                    let CompanyName=results.data[a]['Customer Name'];
+                    let CompanyName=results.data[a]['Customer: Customer Name'];
                     let address=results.data[a]['Address'];
-                    let b_name=results.data[a]['Status']
+                    let s=results.data[a]['Status']
                     i+=1;
-                    addMarker({location:{lat:lt , lng:lg},content:'<h2>'+CompanyName+'</h2>'+'<p>'+address+'<p>'+'<p>'+b_name+'<p>'})
+                    debugger;
+                    if(results.data[a]['Status']=="Could not be verified"){
+                        addMarker({location:{lat:lt , lng:lg},content:'<h2>'+CompanyName+'</h2>'+'<p>'+address+'<p>',status:"could not be verified"})
+
+                    }
+                    else{
+                        addMarker({location:{lat:lt , lng:lg},content:'<h2>'+CompanyName+'</h2>'+'<p>'+address+'<p>'+'<p>'+s+'<p>',status:s.toLowerCase()})
+
+                    }
                 }
             }  
             else{
                 if(results.data[a]['Latitude'].indexOf('.')!=-1 && results.data[a]['Longitude'].indexOf('.')!=-1){
-                    if (results.data[a]['Status'].toLowerCase() == selectOpt.value){
+                    if (results.data[a]['Status'].toLowerCase() == selectOpt.value || results.data[a]['Status'].toLowerCase()=="could not be verified"){
                         let lt = parseFloat(results.data[a]['Latitude']);
                         let lg= parseFloat(results.data[a]['Longitude']);
-                        let CompanyName=results.data[a]['Customer Name'];
+                        let CompanyName=results.data[a]['Customer: Customer Name'];
                         let address=results.data[a]['Address'];
-                        let b_name=results.data[a]['Status']
+                        let s=results.data[a]['Status']
                         i+=1;
-                        addMarker({location:{lat:lt , lng:lg},content:'<h2>'+CompanyName+'</h2>'+'<p>'+address+'<p>'+'<p>'+b_name+'<p>'})
+                    
+                        if(results.data[a]['Status']=="Could not be verified"){
+                            addMarker({location:{lat:lt , lng:lg},content:'<h2>'+CompanyName+'</h2>'+'<p>'+address+'<p>',status:"could not be verified"})
+    
+                        }
+                        else{
+                            addMarker({location:{lat:lt , lng:lg},content:'<h2>'+CompanyName+'</h2>'+'<p>'+address+'<p>'+'<p>'+s+'<p>',status:s.toLowerCase()})
+    
+                        }
                     }
                 }
             }
         }
-        console.log(i)
+
     }
-
+    // setting map null for getting only selected status markers
     function reloadMarkers() {
-
         // Loop through markers and set map to null for each
         for (var i=0; i<markers.length; i++) {
-    
             markers[i].setMap(null);
         }
-    
         // Reset the markers array
         markers = [];
-    
         // Call set markers to re-add markers
     }
 
-    
     var selectOpt = document.getElementById("select-option");
-   
-    function readCSVFile(filePath) {
-        debugger;
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
-          if (xhr.readyState === 4 && xhr.status === 200) {
-            debugger;
-            var csvData = xhr.responseText;
-            var lines = csvData.split('\n');
-            var result = [];
-            var headers = lines[0].split(',');
-            for (var i = 1; i < lines.length; i++) {
-              var obj = {};
-              var currentLine = lines[i].split(',');
-              for (var j = 0; j < headers.length; j++) {
-                obj[headers[j]] = currentLine[j];
-              }
-              result.push(obj);
-            }
-            console.log(result); // or do something else with the parsed CSV data
-            reloadMarkers();
-            plotmap(result);  
-          }
-        };
-        xhr.open('GET', filePath, true);
-        xhr.send();
-      }
-
     selectOpt.addEventListener("change", function() {
         debugger;
-        readCSVFile("http://localhost/clientsheet.csv");
-        reloadMarkers();
-        plotmap(result);  
+        // readCSVFile("http://localhost/clientsheet.csv");
+        parse(); 
     });
 }
+
